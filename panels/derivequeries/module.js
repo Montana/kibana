@@ -27,6 +27,7 @@ angular.module('kibana.derivequeries', [])
 
   // Set and populate defaults
   var _d = {
+    status  : "Beta",
     label   : "Search",
     query   : "*",
     group   : "default",
