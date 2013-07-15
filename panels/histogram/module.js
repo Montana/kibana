@@ -69,7 +69,13 @@ angular.module('kibana.histogram', [])
     percentage  : false,
     interactive : true,
   }
-  _.defaults($scope.panel,_d)
+  _.defaults($scope.panel,_d);
+
+  //TODO: What to do for a stacked bar? (Multiple queries)
+
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+       $scope.panel.query[0].label = $scope.panel.query[0].query = $.queryFromURL;
 
   $scope.init = function() {
     eventBus.register($scope,'time', function(event,time){$scope.set_time(time)});
@@ -78,10 +84,12 @@ angular.module('kibana.histogram', [])
     eventBus.register($scope,'query', function(event, query) {
       if(_.isArray(query)) {
         $scope.panel.query = _.map(query,function(q) {
-          return {query: q, label: q};
+            var splitQueryArray =  splitQuery(q); 
+            return {query: splitQueryArray[0], label: splitQueryArray[0]};
         })
       } else {
-        $scope.panel.query[0] = {query: query, label: query}
+         var splitQueryArray =  splitQuery(query); 
+         $scope.panel.query[0] = {query: splitQueryArray[0], label: splitQueryArray[0]}
       }
       $scope.get_data();
     });

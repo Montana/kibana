@@ -19,7 +19,11 @@ angular.module('kibana.parallelcoordinates', [])
       spyable: true
     }
 
-    _.defaults($scope.panel, _d)
+    _.defaults($scope.panel, _d);
+
+    //Check if query is sent from URL and modify panel query accordingly
+    if($.queryFromURL)
+        $scope.panel.query = $.queryFromURL;
 
     $scope.init = function () {
 

@@ -86,6 +86,11 @@ angular.module('kibana.controllers', [])
     return _.isNull(_error) ? data : _error[1];
   }
 
+  $scope.showHelp = function(){
+      var cleanURL = location.hash.replace(/^[\?\/#]/, '');
+      window.location = "help.html" + (cleanURL ? '#' + cleanURL : '' );
+  }
+
   $scope.init();
 
 })

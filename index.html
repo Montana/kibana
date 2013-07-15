@@ -27,7 +27,6 @@
     <script src="config.js"></script>
     <script src="js/app.js"></script>
 
-
   </head>
 
   <body ng-controller="DashCtrl" ng-cloak>
@@ -38,6 +37,7 @@
     <div class="navbar navbar-static-top">
       <div class="navbar-inner">
         <div class="container-fluid">
+          <p class="navbar-text pull-right btn btn-success" ng-click="showHelp()"><strong>Need Help?</strong></p>
           <p class="navbar-text pull-right"><small><strong>Kibana 3</strong> <small>milestone 2</small></small></p>
           <span class="brand">{{dashboards.title}}</span>
           <div class="brand"><i class='icon-cog pointer' ng-show='dashboards.editable' bs-modal="'partials/dasheditor.html'"></i></div>
@@ -50,5 +50,4 @@
       </div>
     </div>
   </body>
-
 </html>

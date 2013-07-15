@@ -42,6 +42,10 @@ angular.module('kibana.derivequeries', [])
   }
   _.defaults($scope.panel,_d);
 
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query = $.queryFromURL;
+
   $scope.init = function() {
     eventBus.register($scope,'fields', function(event, fields) {
       $scope.panel.fields = fields.all;

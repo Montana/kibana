@@ -1,3 +1,4 @@
+
 /*
 
   ## Table
@@ -47,9 +48,14 @@ angular.module('kibana.table', [])
     sortable: true,
     header  : true,
     paging  : true, 
-    spyable: true
+    spyable: true,
+    globalFields: fields
   }
   _.defaults($scope.panel,_d)
+
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query = $.queryFromURL;
 
   $scope.init = function () {
 
@@ -83,6 +89,13 @@ angular.module('kibana.table', [])
   }
 
   $scope.set_sort = function(field) {
+    $scope.panel.error = "";
+    
+    if($.customScriptFields && $.customScriptFields.hasOwnProperty(field)){
+        $scope.panel.error = "Cannot sort on a custom field";
+        return;
+    }
+
     if($scope.panel.sort[0] === field)
       $scope.panel.sort[1] = $scope.panel.sort[1] == 'asc' ? 'desc' : 'asc';
     else
@@ -116,7 +129,19 @@ angular.module('kibana.table', [])
   }
 
   $scope.build_search = function(field,value,negate) {
-    $scope.panel.query = add_to_query($scope.panel.query,field,value,negate)
+    if($.customScriptFields && $.customScriptFields.hasOwnProperty(field)){
+          $scope.panel.error = "Cannot search on a custom field value";
+          return;
+      }
+    
+    var splitQueryArray =  splitQuery($scope.panel.query);
+
+    $scope.panel.query = [add_to_query(splitQueryArray[0],field,value,negate)];
+      
+    if(splitQueryArray.length > 1)
+        for(var index = 1; index < splitQueryArray.length; index++)
+            $scope.panel.query += " | " + splitQueryArray[index];       
+    
     $scope.panel.offset = 0;
     $scope.get_data();
     eventBus.broadcast($scope.$id,$scope.panel.group,'query',[$scope.panel.query]);
@@ -133,10 +158,22 @@ angular.module('kibana.table', [])
 
     var _segment = _.isUndefined(segment) ? 0 : segment
     $scope.segment = _segment;
+    
+    //Resetting all fields returned by query as false 
+    if($.customScriptFields){
+        for(var field in $.customScriptFields)
+            $.customScriptFields[field] = false;
+    }
+    
+    var oScript = {};
 
+    //Split the user input into query and script calls
+    var splitQueryArray =  splitQuery($scope.panel.query);
+    
     var request = $scope.ejs.Request().indices($scope.index[_segment])
+      .fields(["_source"])
       .query(ejs.FilteredQuery(
-        ejs.QueryStringQuery($scope.panel.query || '*'),
+        ejs.QueryStringQuery(splitQueryArray[0] || '*'),
         ejs.RangeFilter($scope.time.field)
           .from($scope.time.from)
           .to($scope.time.to)
@@ -150,6 +187,36 @@ angular.module('kibana.table', [])
       )
       .size($scope.panel.size*$scope.panel.pages)
       .sort($scope.panel.sort[0],$scope.panel.sort[1]);
+    
+    //Valid pipe found, extract the arguments into oScript
+    if(splitQueryArray.length > 1){
+        for(var index = 1; index < splitQueryArray.length; index++){   
+            getArguments(splitQueryArray[index], oScript);    
+    
+            //Handle various script calls
+            if(oScript.script && oScript.script === 'rex'){
+                //Create a custom fields object if it doesn't exist
+                if(!$.customScriptFields)
+                    $.customScriptFields = {};
+                
+                $.customScriptFields[oScript.displayName] = true;
+        
+                request.scriptField(
+                    ejs.ScriptField(oScript.displayName)
+                    .lang("js")
+                    .script(oScript.script)
+                    .params(
+                        {
+                            "regex": oScript.expr,
+                            "field": oScript.field  
+                        }
+                    )
+                );
+                
+                break;
+            }
+        }
+    }
 
     $scope.populate_modal(request)
 
@@ -174,8 +241,16 @@ angular.module('kibana.table', [])
       // Check that we're still on the same query, if not stop
       if($scope.query_id === query_id) {
         $scope.data= $scope.data.concat(_.map(results.hits.hits, function(hit) {
+          var flattennedSource = flatten_json(hit['_source']);
+          
+          //Check if any fields are returned by query and include in _source if found
+          if(hit['fields']){
+            for(var field in hit['fields'])
+                flattennedSource[field] = hit['fields'][field];
+          }
+
           return {
-            _source   : flatten_json(hit['_source']),
+            _source   : flattennedSource,
             highlight : flatten_json(hit['highlight']||{})
           }
         }));
@@ -200,6 +275,25 @@ angular.module('kibana.table', [])
       
       // This breaks, use $scope.data for this
       $scope.all_fields = get_all_fields(_.pluck($scope.data,'_source'));
+
+      //Remove non existent query fields from panel
+      if($.customScriptFields && Object.keys($.customScriptFields).length)
+      {
+            //Iterate over the displayed table fields
+            for(var fieldIndex=0; fieldIndex < $scope.panel.fields.length; fieldIndex++){
+                if($.customScriptFields[$scope.panel.fields[fieldIndex]] === false)
+                    $scope.panel.fields.splice(fieldIndex, 1);
+            }
+
+            //Iterate over the global fields object 
+            for(var fieldIndex=0; fieldIndex < $scope.panel.globalFields.list.length; fieldIndex++){
+                if($.customScriptFields[$scope.panel.globalFields.list[fieldIndex]] === false){
+                    $scope.panel.globalFields.list.splice(fieldIndex, 1);
+                    delete $.customScriptFields[$scope.panel.globalFields.list[fieldIndex]];
+                }
+            }
+      }
+
       broadcast_results();
 
       // If we're not sorting in reverse chrono order, query every index for

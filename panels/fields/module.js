@@ -1,3 +1,4 @@
+
 /*
 
   ## Fields
@@ -27,8 +28,13 @@ angular.module('kibana.fields', [])
     style   : {},
     arrange : 'vertical',
     micropanel_position : 'right', 
-  }
+  };
+  
   _.defaults($scope.panel,_d);
+
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query = $.queryFromURL;
 
   $scope.init = function() {
     $scope.Math = Math;
@@ -58,6 +64,7 @@ angular.module('kibana.fields', [])
   }
 
   $scope.toggle_micropanel = function(field) {
+    $scope.toggleRelatedFields = false;
     $scope.micropanel = {
       field: field,
       values : top_field_values($scope.docs,field,10),
@@ -65,6 +72,11 @@ angular.module('kibana.fields', [])
       count: _.countBy($scope.docs,function(doc){
         return _.contains(_.keys(doc),field)})['true'],
     }
+  }
+
+  $scope.checkVisibility = function (field){
+    if($.customScriptFields && $.customScriptFields.hasOwnProperty(field))
+        return 'none';
   }
 
   $scope.toggle_sort = function() {
@@ -80,12 +92,27 @@ angular.module('kibana.fields', [])
   }
 
   $scope.build_search = function(field, value,negate) {
-    $scope.panel.query = [add_to_query($scope.panel.query,field,value,negate)]
-    eventBus.broadcast($scope.$id,$scope.panel.group,'query',$scope.panel.query);
+      //Split the user input into query and script calls
+      var splitQueryArray =  splitQuery($scope.panel.query);
+
+      $scope.panel.query = [add_to_query(splitQueryArray[0],field,value,negate)];
+      
+      if(splitQueryArray.length > 1)
+          for(var index = 1; index < splitQueryArray.length; index++)
+            $scope.panel.query += " | " + splitQueryArray[index];       
+
+      eventBus.broadcast($scope.$id,$scope.panel.group,'query',$scope.panel.query);
   }
 
   $scope.is_active = function(field) {
     return _.indexOf($scope.active,field) > -1 ? ['label','label-info'] : '';    
+  }
+
+  $scope.toggle_related = function(){
+    if($scope.toggleRelatedFields)
+        $scope.toggleRelatedFields = false;
+    else
+        $scope.toggleRelatedFields = true;
   }
 
 })

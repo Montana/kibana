@@ -61,6 +61,7 @@ labjs.wait(function(){
     }]);
   angular.element(document).ready(function() {
     $('body').attr('ng-controller', 'DashCtrl')
+    checkURLForQuery();
     angular.bootstrap(document, ['kibana']);
   });
 });

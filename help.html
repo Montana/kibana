@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      
+<html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en" id="ng-app">
+   <![endif]-->
+   <!--[if IE 7]>         
+   <html class="no-js lt-ie9 lt-ie8" lang="en" id="ng-app">
+      <![endif]-->
+      <!--[if IE 8]>         
+      <html class="no-js lt-ie9" lang="en">
+         <![endif]-->
+         <!--[if gt IE 8]><!--> 
+         <html class="no-js" lang="en">
+            <!--<![endif]-->
+            <head>
+               <meta charset="utf-8">
+               <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+               <meta name="description" content="Search based application built using ElasticSearch, elastic.js, and Angular.js">
+               <meta name="viewport" content="width=device-width">
+               <title>Kibana 3 Help</title>
+               <link rel="stylesheet" href="common/css/normalize.min.css">
+               <link rel="stylesheet" href="common/css/bootstrap.dark.min.css">
+               <link rel="stylesheet" href="common/css/animate.min.css">
+               <link rel="stylesheet" href="common/css/bootstrap-responsive.min.css">
+               <link rel="stylesheet" href="common/css/font-awesome.min.css">
+               <link rel="stylesheet" href="common/css/main.css">
+               <link rel="stylesheet" href="common/css/help.css">
+               <!-- project dependency libs -->
+               <script src="js/help.js" type="text/javascript"></script>
+               <script src="common/lib/jquery-1.8.0.min.js" type="text/javascript"></script>
+            </head>
+            <body>
+               <div id="divContainer">
+                  <div class="navbar navbar-static-top">
+                     <div class="navbar-inner">
+                        <div class="container-fluid">
+                           <p class="navbar-text pull-right btn btn-success" onclick="loadKibana()"><strong>Take me back</strong></p>
+                           <span class="brand">Kibana Help</span>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="container-fluid main">
+                     <div class="divIndex">
+                        <div id="divSection_0" class="divSection divSectionSelected" onclick="showContent(this.id)">Panels</div>
+                        <div id="divSection_1" class="divSectionEntry" onclick="showContent(this.id)">Time Picker</div>
+                        <div id="divSection_2" class="divSectionEntry" onclick="showContent(this.id)">Dash Control</div>
+                        <div id="divSection_3" class="divSectionEntry" onclick="showContent(this.id)">Derive Queries</div>
+                        <div id="divSection_4" class="divSectionEntry" onclick="showContent(this.id)">String Query</div>
+                        <div id="divSection_5" class="divSectionEntry" onclick="showContent(this.id)">Hits</div>
+                        <div id="divSection_6" class="divSectionEntry" onclick="showContent(this.id)">Table</div>
+                        <div id="divSection_7" class="divSectionEntry" onclick="showContent(this.id)">Fields</div>
+                        <div id="divSection_8" class="divSectionEntry" onclick="showContent(this.id)">Stats</div>
+                        <div id="divSection_9" class="divSectionEntry" onclick="showContent(this.id)">Sort</div>
+                        <div id="divSection_10" class="divSectionEntry" onclick="showContent(this.id)">Histogram</div>
+                        <div id="divSection_11" class="divSectionEntry" onclick="showContent(this.id)">Pie</div>
+                        <div id="divSection_12" class="divSectionEntry" onclick="showContent(this.id)">Trends</div>
+                        <div id="divSection_13" class="divSectionEntry" onclick="showContent(this.id)">Column</div>
+                        <div id="divSection_14" class="divSectionEntry" onclick="showContent(this.id)">Map</div>
+                        <div id="divSection_15" class="divSectionEntry" onclick="showContent(this.id)">Text</div>
+                        <div id="divSection_16" class="divSection" onclick="showContent(this.id)">Scripts</div>
+                        <div id="divSection_17" class="divSectionEntry" onclick="showContent(this.id)">Rex</div>
+                        <div id="divSection_18" class="divSectionEntry" onclick="showContent(this.id)">Stats</div>
+                     </div>
+                     <div class="divContent">
+                        <div id="divContent_0" class="divShow">
+                           <p>
+                              Panels can be assigned group names from their settings window. Panels which belong to the same group are broadcasted notifications when a query from
+                              other panels or a time picker panel undergoes changes in its values. So if a user changes values of the query or time picker panels and clicks search, the
+                              changed query/ time parameters are passed to the panels in the group and they update their results. Panels which are not part of any group execute the
+                              query which is specified in their settings. The Fields panel and the Table panel should be in the same group if you want to toggle visibility of fields in
+                              the Table panel via the Fields panel.
+                           </p>
+                        </div>
+                        <div id="divContent_1" class="divHide">
+                           <p>
+                              This panel allows specifying the time range of the records fetched. You can select the time range in three ways,
+                           </p>
+                           <p>
+                              a) <strong>Relative</strong> - Select from a set of specified time ranges relative to current time (Time ranges available can be configured through
+                              settings)
+                           </p>
+                           <p>
+                              <img width="407" height="60" src="common/img/help/tp_relative.png" />
+                           </p>
+                           <p>
+                              This will fetch the results as per the query for the last 2 days (previous 48 hours)
+                           </p>
+                           <p>
+                              b) <strong>Absolute</strong> - Specify the time window for the log records to be fetched
+                           </p>
+                           <p>
+                              <img width="384" height="63" src="common/img/help/tp_absolute.png"/>
+                           </p>
+                           <p>
+                              c) <strong>Since</strong> - Specify a time since when you want to fetch log records
+                           </p>
+                           <p>
+                              <img width="257" height="61" src="common/img/help/tp_since.png"/>
+                           </p>
+                           <p>
+                              The auto refresh checkbox allows refreshing the results on an interval which is configurable through the panel settings.
+                           </p>
+                        </div>
+                        <div id="divContent_2" class="divHide">
+                           <p>
+                              This panel allows the user to save their dashboards or load previously saved dashboards. Users can also set or clear their dashboard defaults.
+                           </p>
+                           <p>
+                              The dashboards can be saved as a file on the user's computer or can be saved remotely on the elastic search server or as a gist. The dashboards can then be
+                              loaded from the corresponding sources.
+                           </p>
+                           <p>
+                              <img width="229" height="352" src="common/img/help/dc_save.png" align="left" hspace="12"/>
+                              <img width="231" height="354" src="common/img/help/dc_load.png"/>
+                           </p>
+                           <p>
+                              Users can share their dashboards with other users by generating a link using the share button.
+                           </p>
+                           <p>
+                              The options visible to save and load can be controlled from the panel settings. The settings also allow specifying the time to live for shared dashboard
+                              links.
+                           </p>
+                        </div>
+                        <div id="divContent_3" class="divHide">
+                           <p>
+                              You can specify a search query and a field in this panel. The panel then returns all the different values the field takes in the results of the search
+                              query. These different field values are then passed as a query to the panels which are in the same group as the Derive Queries panel. The panel can be
+                              configured to exclude certain terms for the aggregation counts.
+                           </p>
+                           <p>
+                              You can configure the panel to get a top 'x' number of different values for the field.
+                           </p>
+                           <p>
+                              The histogram or hits panel can be used in harmony with the derive queries panel to view aggregated count for the different values a field takes in the
+                              search queries' results.
+                           </p>
+                           <p>
+                              For example, the following query is to find all records which are from a source host whose name starts with "n".
+                           </p>
+                           <p>
+                              <img width="387" height="66" src="common/img/help/dq_search.png"/>
+                           </p>
+                           <p>
+                              The panel will fetch the top 5 most common values for the "@source_host" field from the results. These values will then be broadcasted as queries to other
+                              panels in the group. The following screenshot shows how the values are passed to a string query and histogram panel.
+                           </p>
+                           <p>
+                              <img width="100%" height="515" src="common/img/help/dq_hist.png"/>
+                           </p>
+                           <p>
+                              Only panels which support multiple queries (histogram, hits etc.) will show results for all field value queries. Other panels which don't support multiple
+                              queries (Table, Pie etc.) will show results only for first query (first field value).
+                           </p>
+                        </div>
+                        <div id="divContent_4" class="divHide">
+                           <p>
+                              This panel allows for query input which can then be broadcasted to other panels in the group. All the panels update their results as per the query
+                              broadcasted. This panel can be used as a central control for the results displayed in the various panels in the same group.
+                           </p>
+                           <p>
+                              This panel also supports multiple queries (can be enabled from settings) wherein multiple queries can be broadcasted to the group.
+                           </p>
+                           <p>
+                              For example, we want to find all the log records in the past 6 hours which have a source path as "/bb/data/act.log" and are from a source host whose name
+                              starts with "p".
+                           </p>
+                           <p>
+                              <img width="100%" height="580" src="common/img/help/sq.png"/>
+                           </p>
+                           <p>
+                              Only panels which support multiple queries (histogram, hits etc.) will show results for all queries. Other panels which don't support multiple queries
+                              (Table, Pie etc.) will show results only for first query.
+                           </p>
+                        </div>
+                        <div id="divContent_5" class="divHide">
+                           <p>
+                              Displays the total number of hits for a broadcasted query or for queries configured as part of the panel itself.
+                           </p>
+                           <p>
+                              The hits can be viewed as a simple list, a bar chart or a pie chart. This panel has multiple query support and can display number of hits for multiple
+                              queries.
+                           </p>
+                           <p>
+                              For example, consider the string query panel setup as a multiple query panel to find log records having source host values that start with "nj", "ny" or
+                              "p". The hits panel is configured to show a pie chart displaying the number of hits these queries will fetch relative to each other.
+                           </p>
+                           <p>
+                              <img width="699" height="460" src="common/img/help/hits.png"/>
+                           </p>
+                        </div>
+                        <div id="divContent_6" class="divHide">
+                           <p>
+                              Shows a tabular view of the results returned for a query.
+                           </p>
+                           <p>
+                              The fields displayed in the table can be controlled via the panel settings. They can also be controlled via the Fields panel when both the panels belong to
+                              the same group.
+                           </p>
+                           <p>
+                              This panel also allows highlighting search terms in fields amongst the results. The columns in which the search term is to be highlighted can be selected
+                              via the panel's settings.
+                           </p>
+                           <p>
+                              For example, consider a query in which we search for a particular term in the message field of log records. In the panel settings, the field "message" has
+                              been selected to be highlighted. The panel will highlight the message field of every row in the results where the search term was found. The arrow on the
+                              timestamp column indicates that the results are currently sorted by timestamp. The sort order can be changed by clicking on the headers of the other
+                              columns.
+                           </p>
+                           <p>
+                              <img width="100%" height="983" src="common/img/help/table.png"/>
+                           </p>
+                           <p>
+                              A row in the result can be clicked to view all the field values for that row in a sub table. The action column in this sub table adds the field value (or
+                              NOT's it) in the query of the panel (not the group). A Field panel, if any, will also get updated.
+                           </p>
+                           <p>
+                              The number of results fetched can be controlled from the panel's settings.
+                           </p>
+                        </div>
+                        <div id="divContent_7" class="divHide">
+                           <p>
+                              Displays all fields returned as part of the results of the group query. Visibility of columns in the corresponding Table panel in the same group can be
+                              change via this panel.
+                           </p>
+                           <p>
+                              You can click on the fields to see all the various values the field takes in the query result set for the group which it is a part of. The dialog displays
+                              all the values the field takes in a table. The table has an action column, clicking on which adds the field value (or NOT's it) in the query of the entire
+                              group.
+                           </p>
+                           <p>
+                              For example, consider that we made an initial query to get all log records having a source host whose value starts with "p". The fields in the panel which
+                              are checked are shown in the results. Clicking on a field opens up a dialog which displays all the different values the field takes in the result.
+                           </p>
+                           <p>
+                              <img width="100%" height="471" src="common/img/help/fields.png"/>
+                           </p>
+                           <p>
+                              Clicking on the search icon for a value adds it to the query and a new search will be performed along with that value. If we clicked the second value, the
+                              search will be tailored to query with clicked value.
+                           </p>
+                           <p>
+                              <img width="100%" height="74" src="common/img/help/fields_search.png"/>
+                           </p>
+                           <p>
+                              The Field panel does not have the facility to have a query of its own and has to be used in conjunction with other panels in the same group for initial
+                              loading of field values.
+                           </p>
+                           <p>
+                              Updating the query of a Table panel in the same group refreshes the Fields panel as well.
+                           </p>
+                        </div>
+                        <div id="divContent_8" class="divHide">
+                           <p>
+                              The stats panel is useful for viewing aggregated results of a field grouped together by another field. The different aggregates available are max, min,
+                              average, sum and count. The results of a stats query are displayed in a table similar to the table panel. The stats script call is discussed in detail in
+                              the Scripts section of this document.
+                           </p>
+                           <p>
+                              For example, suppose we want to count for each source host, the number of records which have the field "@fields.tid" with value 16 and for each source
+                              host, we also want the min and max value that field takes.
+                           </p>
+                           <p>
+                              The query will be something like this,
+                           </p>
+                           <p>
+                              <img width="100%" height="77" src="common/img/help/stats_script.png"/>
+                           </p>
+                           <p>
+                              The results for the above query will be displayed as,
+                           </p>
+                           <p>
+                              <img width="100%" height="313" src="common/img/help/stats.png"/>
+                           </p>
+                           <p>
+                              The panel allows sorting and the number of results fetched depend on the paging settings. Sorting is only performed on the number of results already
+                              fetched unlike the table panel where a sort action queries the server again to get the data as per sorted column.
+                           </p>
+                           <p>
+                              The panel can be configured to have its own query or can receive a query from the string query panel.
+                           </p>
+                        </div>
+                        <div id="divContent_9" class="divHide">
+                           <p>
+                              Allows sorting the results of the Table panel. The panel should be in the same group as the target Table panel.
+                           </p>
+                        </div>
+                        <div id="divContent_10" class="divHide">
+                           <p>
+                              Displays a time based distribution of the result set as per the time frame selected from the time picker. The time frame can also be changed by dragging a
+                              rectangle over the histogram.
+                           </p>
+                           <p>
+                              The histogram will always show time along the X axis. The Y axis can either be a count, min, max, mean or total. Every aggregate function except count will
+                              require a field on which you want to perform the aggregate. (This field has to be a numeric field)
+                           </p>
+                           <p>
+                              This Panel supports multiple queries and you can display the results of multiple queries overlaid over each other or stacked up over one another.
+                           </p>
+                           <p>
+                              This panel can be configured to have its own set of queries or receive queries from other panels in the group. (String Query, Derive Query panel etc.)
+                           </p>
+                           <p>
+                              For example, the following screenshot is of a histogram panel configured as a line chart with a line fill. The string query panel is configured in multi
+                              query mode and broadcasts the two queries to the histogram panel. The panel plots the results of the two queries as two line charts overlaid over one
+                              another.
+                           </p>
+                           <p>
+                              <img width="100%" height="475" src="common/img/help/histogram.png"/>
+                           </p>
+                        </div>
+                        <div id="divContent_11" class="divHide">
+                           <p>
+                              The pie chart operates in two modes,
+                           </p>
+                           <p>
+                              a) <strong>Terms mode</strong>  <strong></strong>
+                           </p>
+                           <p>
+                              In this mode, by default, you can view a breakup of top ten most common terms in all the fields of the log records.
+                           </p>
+                           <p>
+                              It can be configured to view up a breakup of the most common top 'x' number of terms in a particular field.
+                           </p>
+                           <p>
+                              For example, in a pie chart, the query is configured to get all log records. The field to construct the pie chart is the source host. And the pie chart is
+                              broken down as per the top ten values the field "@source_host" takes.
+                           </p>
+                           <p>
+                              <img width="594" height="175" src="common/img/help/pie_terms.png"/>
+                           </p>
+                           <p>
+                              <img width="299" height="307" src="common/img/help/pie_terms_pie.png"/>
+                           </p>
+                           <p>
+                              The query for the pie chart can be either broadcasted from other panels or can be configured to be panel specific.
+                           </p>
+                           <p>
+                              b) <strong>Goal mode </strong><strong></strong>
+                           </p>
+                           <p>
+                              In the goal mode, you can specify a goal count for a query and then view how much is the hit percentage for that query as compared to the goal count.
+                           </p>
+                           <p>
+                              The pie chart will display the hits as a percentage with respect to the configured goal count.
+                           </p>
+                           <p>
+                              For example, the number the log records which have a source host name that starts with "p" is 122657. We want to set up the pie chart to display what
+                              percentage of these have the value p122. We will hence set the goal count as 122657 and the query to get only hits for source host p122.
+                           </p>
+                           <p>
+                              <img width="541" height="176" src="common/img/help/pie_goal.png"/>
+                           </p>
+                           <p>
+                              The pie chart will display the number of hits as a percentage of the goal count.
+                           </p>
+                           <p>
+                              <img width="308" height="312" src="common/img/help/pie_goal_pie.png"/>
+                           </p>
+                           <p>
+                              This panel supports only a single query and in the event that multiple queries are broadcasted from some other panel in the same group, it will consider
+                              only the first query.
+                           </p>
+                        </div>
+                        <div id="divContent_12" class="divHide">
+                           <p>
+                              The trends panel allows comparing how the results of a query have changed for the time span selected in the time picker panel as compared to the same time
+                              span a specified time ago.
+                           </p>
+                           <p>
+                              The default value for the 'time ago' parameter is 1 day which can be configured form the panel settings.
+                           </p>
+                           <p>
+                              This panel supports multiple queries and you can do a trend analysis for different queries in the time picker time span.
+                           </p>
+                           <p>
+                              For example, the trends panel is configured to compare the query results in the current selected timespan to the same time span 360 minutes ago.
+                           </p>
+                           <p>
+                              <img width="606" height="102" src="common/img/help/trends.png"/>
+                           </p>
+                           <p>
+                              The query is configured to get all logs which have their source host value starting with a "p" and in the last one hour. The trends panel will compare
+                              these results to the results obtained by the same query for the same time span 360 minutes ago. From the trends panel, we can see that the results have
+                              grown by a factor of 50.27%.
+                           </p>
+                           <p>
+                              <img width="607" height="197" src="common/img/help/trends_results.png"/>
+                           </p>
+                        </div>
+                        <div id="divContent_13" class="divHide">
+                           <p>
+                              This panel allows adding child panels in a column layout.
+                           </p>
+                        </div>
+                        <div id="divContent_14" class="divHide">
+                           <p>
+                              The map panel allows plotting the results as per geographic regions provide the results have a state acronym field.
+                           </p>
+                        </div>
+                        <div id="divContent_15" class="divHide">
+                           <p>
+                              This panel allows adding text on the dashboards page. It supports markdown, html or plain text.
+                           </p>
+                        </div>
+                        <div id="divContent_16" class="divHide">
+                           <p>
+                              Script calls can be added in a panel's query setting or the string query panel by adding a pipe followed by the corresponding script call with the required arguments.
+                           </p>
+                        </div>
+                        <div id="divContent_17" class="divHide">
+                           <p>
+                              This script allows extracting data from a field by matching the field's content to a regular expression. The extracted value is populated in a separate
+                              column in the table panel. The script will only work with a table panel.
+                           </p>
+                           <p>
+                              The syntax for the script call is,
+                           </p>
+                           <p class="paraPad">
+                              <span class="spnEmphasis">&lt;query&gt; | rex expr=&lt;regular expression&gt; field=&lt;field to extract from&gt; displayName=&lt;column header in table panel&gt;</span>
+                           </p>
+                           <p>
+                              For example, every log record has a message field which can take values like,
+                           </p>
+                           <p class="paraEmphasis">
+                                "30MAY2013_21:00:27.675 6675:1104677184 INFO m_basfw_server.cpp:190 BASFW.SERVER.AUDIT [ Timestamp=30MAY2013_21:00:27.674-0400 <span class="spnHighlight">ServiceId=64696</span>
+                                  VersionMajor=1 VersionMinor=0 Source=5682 User=9631501 Valid=1 Rule= Reason= ]"                                
+                           </p>
+                           <p>
+                              We want to extract the highlighted field value as a separate column in the table panel. The script call will be something like,
+                           </p>
+                           <p class="paraPad">
+                              <span class="spnEmphasis">* | rex expr=ServiceId=(\d+) field=@message displayName="SERVICE ID"</span>
+                           </p>
+                           <p>
+                              This will add a column named "SERVICE ID" to the table panel and also to the Fields panel if any. The results will be displayed as,
+                           </p>
+                           <p>
+                              <img width="100%" height="468" src="common/img/help/rex.png"/>
+                           </p>
+                           <p>
+                              If the argument values for expr, field and displayName contain spaces, they need to be enclosed in double quotes. If they contain double quotes, the quotes
+                              need to be escaped.
+                           </p>
+                        </div>
+                        <div id="divContent_18" class="divHide">
+                           <p>
+                              This script allows viewing aggregated data by a field grouped over values of another field. The aggregate functions available are min, max, avg, sum and
+                              count. All aggregate function except count requires a numeric field to be supplied as an argument. The script works in conjunction with a stats panel.
+                           </p>
+                           <p>
+                              The syntax for the script call is,
+                           </p>
+                           <p class="paraPad">
+                              <span class="spnEmphasis">&lt;query&gt; | stats &lt;aggregate-function(numeric-field | sub-query)&gt; [as &lt;alias&gt;] by &lt;grouping-field&gt;</span>
+                           </p>
+                           <p>
+                              Multiple aggregate function calls can be added by separating them with a comma. The sub-query option is only available for the count clause and conversely,
+                              the numeric-field option is only allowed for the other aggregate function calls.
+                           </p>
+                           <p>
+                              Consider an example for the count clause. Say we want to split the results of a query as a count for each source host and also a count by source host in
+                              the query results where the field TID takes a particular value.
+                           </p>
+                           <p>
+                              The query (select all as indicated by a *) along with the script call can be something like,
+                           </p>
+                           <p class="paraPad">
+                              <span class="spnEmphasis">* | stats count(@fields.tid:16) as "TID 16", count by @source_host</span>
+                           </p>
+                           <p>
+                              The results will be populated in the stats panel as,
+                           </p>
+                           <p>
+                              <img width="100%" height="306" src="common/img/help/stats_script_results.png"/>
+                           </p>
+                           <p>
+                              For the other aggregate functions, let's say we want to find the min TID, max PID, mean of PIDs and sum of TIDs for each source host. The query and script
+                              call will be something like,
+                           </p>
+                           <p class="paraEmphasis">
+                              * | stats min(@fields.tid) as "MIN TID", max (@fields.pid) as "MAX PID", avg(@fields.pid) as AVG PID, sum(@fields.tid) as SUM TID by @source_host
+                           </p>
+                           <p>
+                              The results will be displayed as,
+                           </p>
+                           <p>
+                              <img width="100%" height="308" src="common/img/help/stats_script_results2.png"/>
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </body>
+         </html>

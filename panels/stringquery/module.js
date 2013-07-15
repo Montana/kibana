@@ -35,6 +35,10 @@ angular.module('kibana.stringquery', [])
   }
   _.defaults($scope.panel,_d);
 
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query = $.queryFromURL;
+  
   $scope.init = function() {
     // If we're in multi query mode, they all get wiped out if we receive a 
     // query. Query events must be exchanged as arrays.
@@ -47,7 +51,12 @@ angular.module('kibana.stringquery', [])
   $scope.send_query = function(query) {
     var _query = _.isArray(query) ? query : [query];
     update_history(_query);
-    eventBus.broadcast($scope.$id,$scope.panel.group,'query',_query);
+    for(var queryIndex = 0; queryIndex < _query.length; queryIndex++)        
+        if(_query[queryIndex] === "")
+           _query[queryIndex] = "*";
+    
+    $scope.panel.query = _query;
+    eventBus.broadcast($scope.$id,$scope.panel.group,'query',_query)
   }
 
   $scope.add_query = function() {

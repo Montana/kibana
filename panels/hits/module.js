@@ -37,7 +37,11 @@ angular.module('kibana.hits', [])
     tilt    : false,
     labels  : true
   }
-  _.defaults($scope.panel,_d)
+  _.defaults($scope.panel,_d);
+
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query[0].label =  $scope.panel.query[0].query = $.queryFromURL;
 
   $scope.init = function () {
     $scope.hits = 0;
@@ -46,7 +50,8 @@ angular.module('kibana.hits', [])
     });
     eventBus.register($scope,'query', function(event, query) {
       $scope.panel.query = _.map(query,function(q) {
-        return {query: q, label: q};
+        var splitQueryArray =  splitQuery(q); 
+        return {query: splitQueryArray[0], label: splitQueryArray[0]};
       })
       $scope.get_data();
     });

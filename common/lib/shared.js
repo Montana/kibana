@@ -195,8 +195,6 @@ function addslashes(str) {
 }
 
 // Create an ISO8601 compliant timestamp for ES
-//function ISODateString(unixtime) {
-  //var d = new Date(parseInt(unixtime));
 function ISODateString(d) {
   if(is_int(d)) {
     d = new Date(parseInt(d));
@@ -421,3 +419,172 @@ _.mixin({
       return array;
     } 
 });
+
+//Generic loop to identify extraction index for arguments in a string
+function getExtractionIndex(string, charToMatch){
+    var quoteCounter = 0;
+
+    for(var index = 0; index < string.length; index++){
+        if(string.charAt(index) === '"' && string.charAt(index-1) !== '\\')
+            quoteCounter++;
+        else if(quoteCounter % 2 === 0 && string.charAt(index) === charToMatch && string.charAt(index-1) !== '\\')
+            break;        
+    }
+
+    return index;
+}
+
+//Splits query into the actual query and script calls which are followed by pipes
+function splitQuery(queryInput){
+    var splitArray = [], index = 0;
+
+    //Check for valid pipes (Pipes not part of regex and search strings)
+    while(queryInput.length > 0){
+        index = getExtractionIndex(queryInput, "|");
+        splitArray.push(queryInput.substring(0, index).trim());
+        queryInput = queryInput.substring(index + 1).trim();
+    }
+
+    return splitArray;
+}
+
+//Removes leading and trailing double quotes fomr the string
+function removeQuotes(argString){
+    if(argString[0] === '"')
+        argString = argString.substring(1);
+    if(argString[argString.length - 1] === '"')
+        argString = argString.substring(0, argString.length - 1);
+
+    return argString;
+}
+
+function getArguments(argumentString, oScript){
+    var assignmentIndex, operandName, tempObject, operandIndex, index;
+            
+    //First space will indicate that the string before it is the script name
+    index = argumentString.search(' ');
+    oScript.script = argumentString.substring(0, index);
+
+    //Remove script name from arguments
+    argumentString = argumentString.substring(index + 1).trim();
+
+    if(oScript.script === 'rex'){
+        //Loop through to extract each argument (arguments are separated by spaces)
+        while(argumentString.length > 0){       
+            assignmentIndex = argumentString.search("=");
+                    
+            //Catch operand name without spaces 
+            operandName = argumentString.substring(0, assignmentIndex).trim();
+                   
+            //Trim to remove empty characters after '=' operator
+            argumentString = argumentString.substring(assignmentIndex + 1).trim();
+    
+            //Extract value of operand by processing string till we come accross the next space (not enclosed in "")
+            operandIndex = getExtractionIndex(argumentString, " ");
+            oScript[operandName] = argumentString.substring(0, operandIndex).trim();
+
+            //Chop off processed arguments and realign index
+            argumentString = argumentString.substring(operandIndex).trim();
+                    
+            //Clean the argument values for leading or trailing double quotes
+            oScript[operandName] = removeQuotes(oScript[operandName]); 
+        }
+    }
+    else if(oScript.script === 'stats'){
+        index = argumentString.lastIndexOf('by');
+        
+        //The field on which to run the aggregate
+        if(index > 0){
+            oScript.field = argumentString.substring(index + 2).trim();
+            argumentString = argumentString.substring(0, index).trim();
+            oScript.aggregates = [];
+
+            for(index = 0; index < argumentString.length; index++){   
+                if(argumentString.indexOf('count') === 0){
+                    tempObject = {};
+                    tempObject.type = "count";
+
+                    //Process string after count text
+                    argumentString = argumentString.substring(5).trim();
+                    
+                    //Check if count clause has a query
+                    if(argumentString[0] === "("){                
+                        //Extract value of query  by processing string till we come accross the next ")" (not enclosed in "")                       
+                        operandIndex = getExtractionIndex(argumentString, ")");
+                        tempObject.query = argumentString.substring(1, operandIndex).trim();
+                        argumentString = argumentString.substring(operandIndex + 1).trim();
+                    }
+
+                    //Check if user has given an alias for the aggregate call
+                    if(argumentString.indexOf("as") === 0){
+                        //Extract value of alias  by processing string till we come accross the next comma (not enclosed in "")                       
+                        operandIndex = getExtractionIndex(argumentString, ",");
+                        tempObject.alias = removeQuotes(argumentString.substring(2, operandIndex).trim());
+                        argumentString = argumentString.substring(operandIndex + 1).trim();
+                    }
+                    
+                    oScript.aggregates.push(tempObject);
+
+                    //Remove separating commas
+                    if(argumentString[0] === ",")
+                        argumentString = argumentString.substring(1).trim();
+                        
+                    //Reset index since we updated the arguments string
+                    index = -1;
+                }
+                else if(argumentString.indexOf('min') === 0 || argumentString.indexOf('max') === 0 || argumentString.indexOf('avg') === 0 || argumentString.indexOf('sum') === 0){
+                    tempObject = {};
+                    
+                    //Extracting the aggregate type
+                    tempObject.type = argumentString.substring(0, 3);
+
+                    //Process string after count text
+                    argumentString = argumentString.substring(3).trim();
+                    
+                    //The clause has to have a column name to perform the aggregate on
+                    if(argumentString[0] === "("){                
+                        //Extract value of query  by processing string till we come accross the next ")" (not enclosed in "")                       
+                        operandIndex = getExtractionIndex(argumentString, ")");
+                        tempObject.column = argumentString.substring(1, operandIndex).trim();
+                        argumentString = argumentString.substring(operandIndex + 1).trim();                    
+
+                        //Check if user has given an alias for the aggregate call
+                        if(argumentString.indexOf("as") === 0){
+                            //Extract value of alias  by processing string till we come accross the next comma (not enclosed in "")                       
+                            operandIndex = getExtractionIndex(argumentString, ",");
+                            tempObject.alias = removeQuotes(argumentString.substring(2, operandIndex).trim());
+                            argumentString = argumentString.substring(operandIndex + 1).trim();
+                        }
+                        
+                        oScript.aggregates.push(tempObject);
+    
+                        //Remove separating commas
+                        if(argumentString[0] === ",")
+                            argumentString = argumentString.substring(1).trim();
+                    }
+                        
+                    //Reset index since we updated the arguments string
+                    index = -1;
+                }
+            }
+        }        
+        else{
+            //Query malformed due to absence  of by clause, ignore stats script call
+            delete oScript.script;
+        }
+    }
+}
+
+function checkURLForQuery(){
+    try{        
+        var cleanURL = location.hash.replace(/^[\?\/#]/, '');
+        var urlJSON = JSON.parse(window.atob(cleanURL));
+
+        if(urlJSON.search)
+            $.queryFromURL = urlJSON.search;
+    }
+    catch(exception){
+        if($.hasOwnProperty("queryFromURL"))
+            delete $.queryFromURL;
+    }
+}

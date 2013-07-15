@@ -42,7 +42,11 @@ angular.module('kibana.map', [])
     group   : "default",
     index_limit : 0
   }
-  _.defaults($scope.panel,_d)
+  _.defaults($scope.panel,_d);
+
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query = $.queryFromURL;
 
   $scope.init = function() {
     eventBus.register($scope,'time', function(event,time){set_time(time)});

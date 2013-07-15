@@ -50,8 +50,12 @@ angular.module('kibana.pie', [])
     default_field : 'DEFAULT',
     spyable : true,
   }
-  _.defaults($scope.panel,_d)
+  _.defaults($scope.panel,_d);
 
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+      $scope.panel.query.label = $scope.panel.query.query = $.queryFromURL;
+  
   $scope.init = function() {
     eventBus.register($scope,'time', function(event,time){set_time(time)});
     eventBus.register($scope,'query', function(event, query) {
@@ -95,25 +99,61 @@ angular.module('kibana.pie', [])
   $scope.get_data = function() {
     // Make sure we have everything for the request to complete
     if(_.isUndefined($scope.index) || _.isUndefined($scope.time))
-      return
-
+      return;
+    
     $scope.panel.loading = true;
+    $scope.panel.error = "";
+
+    var oScript = {}; 
+    //Split the user input into query and script calls
+    var splitQueryArray =  splitQuery($scope.panel.query.query);
+    
+    //Valid pipe found, extract the arguments into oScript
+    if(splitQueryArray.length > 1){        
+        getArguments(splitQueryArray[1], oScript);
+    }
+
     var request = $scope.ejs.Request().indices($scope.index);
 
     // Terms mode
     if ($scope.panel.mode == "terms") {
-      request = request
-        .facet(ejs.TermsFacet('pie')
-          .field($scope.panel.query.field || $scope.panel.default_field)
-          .size($scope.panel['size'])
-          .exclude($scope.panel.exclude)
-          .facetFilter(ejs.QueryFilter(
-            ejs.FilteredQuery(
-              ejs.QueryStringQuery($scope.panel.query.query || '*'),
-              ejs.RangeFilter($scope.time.field)
-                .from($scope.time.from)
-                .to($scope.time.to)
-              )))).size(0)
+        //Break up custom script field values into pie chart 
+        if(oScript["script"] && $scope.panel.query.field === oScript["displayName"]){
+            request = request
+                .facet(ejs.TermsFacet('pie')
+                .script("rex")
+                .lang("js")
+                .script(oScript["script"])
+                .params(
+                    {
+                            "regex": oScript["expr"],
+                            "field": oScript["field"]  
+                    }
+                )
+                  .size($scope.panel['size'])
+                  .exclude($scope.panel.exclude)
+                  .facetFilter(ejs.QueryFilter(
+                    ejs.FilteredQuery(
+                  ejs.QueryStringQuery(splitQueryArray[0] || '*'),
+                  ejs.RangeFilter($scope.time.field)
+                    .from($scope.time.from)
+                    .to($scope.time.to)
+                  )))).size(0);
+        }
+        else{
+            request = request
+                .facet(ejs.TermsFacet('pie')
+                .field($scope.panel.query.field || $scope.panel.default_field)
+                  .size($scope.panel['size'])
+                  .exclude($scope.panel.exclude)
+                  .facetFilter(ejs.QueryFilter(
+                    ejs.FilteredQuery(
+                  ejs.QueryStringQuery(splitQueryArray[0] || '*'),
+                  ejs.RangeFilter($scope.time.field)
+                    .from($scope.time.from)
+                    .to($scope.time.to)
+                  )))).size(0);
+        }
 
       $scope.populate_modal(request);
 
@@ -121,27 +161,32 @@ angular.module('kibana.pie', [])
 
       // Populate scope when we have results
       results.then(function(results) {
-        $scope.panel.loading = false;
-        $scope.hits = results.hits.total;
-        $scope.data = [];
-        var k = 0;
-        _.each(results.facets.pie.terms, function(v) {
-          var slice = { label : v.term, data : v.count }; 
-          $scope.data.push();
-          if(!(_.isUndefined($scope.panel.colors)) 
-            && _.isArray($scope.panel.colors)
-            && $scope.panel.colors.length > 0) {
-            slice.color = $scope.panel.colors[k%$scope.panel.colors.length];
-          } 
-          $scope.data.push(slice)
-          k = k + 1;
-        });
-        $scope.$emit('render');
+        try{
+            $scope.panel.loading = false;
+            $scope.hits = results.hits.total;
+            $scope.data = [];
+            var k = 0;
+            _.each(results.facets.pie.terms, function(v) {
+              var slice = { label : v.term, data : v.count }; 
+              $scope.data.push();
+              if(!(_.isUndefined($scope.panel.colors)) 
+                && _.isArray($scope.panel.colors)
+                && $scope.panel.colors.length > 0) {
+                slice.color = $scope.panel.colors[k%$scope.panel.colors.length];
+              } 
+              $scope.data.push(slice)
+              k = k + 1;
+            });
+            $scope.$emit('render');
+        }
+        catch(exception){
+            $scope.panel.error = "Check your query and field name";
+        }
       });
     // Goal mode
     } else {
       request = request
-        .query(ejs.QueryStringQuery($scope.panel.query.query || '*'))
+        .query(ejs.QueryStringQuery(splitQueryArray[0] || '*'))
         .filter(ejs.RangeFilter($scope.time.field)
           .from($scope.time.from)
           .to($scope.time.to)
@@ -176,9 +221,29 @@ angular.module('kibana.pie', [])
   }
 
   $scope.build_search = function(field,value) {
-    $scope.panel.query.query = add_to_query($scope.panel.query.query,field,value,false)
-    $scope.get_data();
-    eventBus.broadcast($scope.$id,$scope.panel.group,'query',[$scope.panel.query.query]);
+      if($.customScriptFields && $.customScriptFields.hasOwnProperty(field)){
+          $scope.panel.error = "Cannot search on a custom field value";
+          
+          //Work around todisplay error message  
+          $scope.$apply()
+          
+          return;
+      }
+
+      //Split the user input into query and script calls
+      var splitQueryArray =  splitQuery($scope.panel.query.query);
+
+      $scope.panel.query.query = add_to_query(splitQueryArray[0],field,value,false);
+
+      if(splitQueryArray.length > 1){
+          $scope.panel.query.query += " | "; 
+          for(var index = 1; index < splitQueryArray.length; index++)
+            $scope.panel.query.query += splitQueryArray[index];       
+      }
+
+      $scope.get_data();
+
+      eventBus.broadcast($scope.$id,$scope.panel.group,'query',[$scope.panel.query.query]);
   }
 
   function set_time(time) {

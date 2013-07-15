@@ -30,7 +30,14 @@ angular.module('kibana.trends', [])
     ago     : '1d',
     arrangement : 'vertical',
   }
-  _.defaults($scope.panel,_d)
+  _.defaults($scope.panel,_d);
+    
+  //Check if query is sent from URL and modify panel query accordingly
+  if($.queryFromURL)
+    $scope.panel.query = _.map([$.queryFromURL],function(q) {
+        return {query: q, label: q};
+    });
+
 
   $scope.init = function () {
     $scope.hits = 0;

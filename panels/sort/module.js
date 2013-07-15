@@ -41,10 +41,24 @@ angular.module('kibana.sort', [])
   }
 
   $scope.set_sort = function() {
+    $scope.panel.error = "";
+    
+    if($.customScriptFields && $scope.panel.sort && $.customScriptFields.hasOwnProperty($scope.panel.sort[0])){
+        $scope.panel.error = "Cannot sort on a script field";
+        return;
+    }
+    
     eventBus.broadcast($scope.$id,$scope.panel.group,"sort",$scope.panel.sort)
   }
 
   $scope.toggle_sort = function() {
+    $scope.panel.error = "";
+    
+    if($.customScriptFields && $scope.panel.sort && $.customScriptFields.hasOwnProperty($scope.panel.sort[0])){
+        $scope.panel.error = "Cannot sort on a script field";
+        return;
+    }
+
     $scope.panel.sort[1] = $scope.panel.sort[1] == 'asc' ? 'desc' : 'asc';
     $scope.set_sort();
   }
