@@ -104,32 +104,16 @@ angular.module('kibana.pie', [])
     $scope.panel.loading = true;
     $scope.panel.error = "";
 
-    var oScript = {}; 
+    var oScript = {};
+ 
     //Split the user input into query and script calls
     var splitQueryArray =  splitQuery($scope.panel.query.query);
     
-    //Valid pipe found, extract the arguments into oScript
-    if(splitQueryArray.length > 1){        
-        getArguments(splitQueryArray[1], oScript);
-    }
-
     var request = $scope.ejs.Request().indices($scope.index);
 
     // Terms mode
     if ($scope.panel.mode == "terms") {
-        //Break up custom script field values into pie chart 
-        if(oScript["script"] && $scope.panel.query.field === oScript["displayName"]){
-            request = request
-                .facet(ejs.TermsFacet('pie')
-                .script("rex")
-                .lang("js")
-                .script(oScript["script"])
-                .params(
-                    {
-                            "regex": oScript["expr"],
-                            "field": oScript["field"]  
-                    }
-                )
+        var termsFacet = ejs.TermsFacet('pie')
                   .size($scope.panel['size'])
                   .exclude($scope.panel.exclude)
                   .facetFilter(ejs.QueryFilter(
@@ -138,54 +122,69 @@ angular.module('kibana.pie', [])
                   ejs.RangeFilter($scope.time.field)
                     .from($scope.time.from)
                     .to($scope.time.to)
-                  )))).size(0);
-        }
-        else{
-            request = request
-                .facet(ejs.TermsFacet('pie')
-                .field($scope.panel.query.field || $scope.panel.default_field)
-                  .size($scope.panel['size'])
-                  .exclude($scope.panel.exclude)
-                  .facetFilter(ejs.QueryFilter(
-                    ejs.FilteredQuery(
-                  ejs.QueryStringQuery(splitQueryArray[0] || '*'),
-                  ejs.RangeFilter($scope.time.field)
-                    .from($scope.time.from)
-                    .to($scope.time.to)
-                  )))).size(0);
-        }
+                  )));
 
-      $scope.populate_modal(request);
+        var scriptFlag = false;
+        
+        //Valid pipe found, extract the arguments into oScript
+        if(splitQueryArray.length > 1){
+            for(var index = 1; index < splitQueryArray.length; index++){   
+                getArguments(splitQueryArray[index], oScript);
 
-      var results = request.doSearch();
+                //Break up custom script field values into pie chart 
+                if(oScript["script"] && $scope.panel.query.field === oScript["displayName"]){            
+                    termsFacet.script("rex")
+                        .lang("js")
+                        .script(oScript["script"])
+                        .params(
+                            {
+                                    "regex": oScript["expr"],
+                                    "field": oScript["field"]  
+                            }
+                        );                  
 
-      // Populate scope when we have results
-      results.then(function(results) {
-        try{
-            $scope.panel.loading = false;
-            $scope.hits = results.hits.total;
-            $scope.data = [];
-            var k = 0;
-            _.each(results.facets.pie.terms, function(v) {
-              var slice = { label : v.term, data : v.count }; 
-              $scope.data.push();
-              if(!(_.isUndefined($scope.panel.colors)) 
-                && _.isArray($scope.panel.colors)
-                && $scope.panel.colors.length > 0) {
-                slice.color = $scope.panel.colors[k%$scope.panel.colors.length];
-              } 
-              $scope.data.push(slice)
-              k = k + 1;
-            });
-            $scope.$emit('render');
-        }
-        catch(exception){
-            $scope.panel.error = "Check your query and field name";
-        }
+                    scriptFlag = true;
+                    break;
+                }
+            }
+        }   
+        
+        if(!scriptFlag)
+            termsFacet.field($scope.panel.query.field || $scope.panel.default_field);
+
+        request.facet(termsFacet).size(0);
+
+        $scope.populate_modal(request);
+
+        var results = request.doSearch();
+
+        // Populate scope when we have results
+        results.then(function(results) {
+          try{
+              $scope.panel.loading = false;
+              $scope.hits = results.hits.total;
+              $scope.data = [];
+              var k = 0;
+              _.each(results.facets.pie.terms, function(v) {
+                var slice = { label : v.term, data : v.count }; 
+                $scope.data.push();
+                if(!(_.isUndefined($scope.panel.colors)) 
+                  && _.isArray($scope.panel.colors)
+                  && $scope.panel.colors.length > 0) {
+                  slice.color = $scope.panel.colors[k%$scope.panel.colors.length];
+                } 
+                $scope.data.push(slice)
+                k = k + 1;
+              });
+              $scope.$emit('render');
+          }
+          catch(exception){
+              $scope.panel.error = "Check your query and field name";
+          }
       });
     // Goal mode
     } else {
-      request = request
+      request
         .query(ejs.QueryStringQuery(splitQueryArray[0] || '*'))
         .filter(ejs.RangeFilter($scope.time.field)
           .from($scope.time.from)

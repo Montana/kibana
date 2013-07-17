@@ -212,8 +212,6 @@ angular.module('kibana.table', [])
                         }
                     )
                 );
-                
-                break;
             }
         }
     }
